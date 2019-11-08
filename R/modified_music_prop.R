@@ -34,7 +34,7 @@
 #' @seealso \code{\link{music_basis}}
 #' @export
 
-music_prop_modified = function(bulk.eset, sc.eset = NULL, markers = NULL, clusters, samples, select.ct = NULL, ct.cov = FALSE, verbose = TRUE,
+music_prop_scaled = function(bulk.eset, sc.eset = NULL, markers = NULL, clusters, samples, select.ct = NULL, ct.cov = FALSE, verbose = TRUE,
                       iter.max = 1000, nu = 0.0001, eps = 0.01, centered = FALSE, normalize = FALSE, 
                       celltype.batching = FALSE, celltype.eSet.dir = NULL, ... ){
   
@@ -58,7 +58,7 @@ music_prop_modified = function(bulk.eset, sc.eset = NULL, markers = NULL, cluste
   # Cell type batching argument
   if(celltype.batching == FALSE){
     
-    sc.basis = music_basis_modified(sc.eset, non.zero = TRUE, markers = sc.markers, clusters = clusters, samples = samples, select.ct = select.ct, ct.cov = ct.cov, verbose = verbose)
+    sc.basis = music_basis_scaled(sc.eset, non.zero = TRUE, markers = sc.markers, clusters = clusters, samples = samples, select.ct = select.ct, ct.cov = ct.cov, verbose = verbose)
     
   } else{
     
@@ -83,7 +83,7 @@ music_prop_modified = function(bulk.eset, sc.eset = NULL, markers = NULL, cluste
       
       # Set non-zero to FALSE as removal of genes with non-zero expression occurs across all samples in default mode
       # Thus snRNA-seq must be filtered prior to entry into music_basis()
-      basis_subset <- music_basis_modified(sc.eSet, non.zero = FALSE, markers = sc.markers, clusters = clusters, samples = samples, select.ct = select.ct, ct.cov = ct.cov, verbose = verbose)
+      basis_subset <- music_basis_scaled(sc.eSet, non.zero = FALSE, markers = sc.markers, clusters = clusters, samples = samples, select.ct = select.ct, ct.cov = ct.cov, verbose = verbose)
       
       if(i == 1){
         
@@ -92,7 +92,7 @@ music_prop_modified = function(bulk.eset, sc.eset = NULL, markers = NULL, cluste
       } else{
         
         # Need to add conditional statement for if only one cell type in sc.eSet, as might occur when subsetting dataset into pairs of cell types
-        # music_basis_modified will return a numeric vector, thus must convert to matrix.
+        # music_basis_scaled will return a numeric vector, thus must convert to matrix.
         # Two exceptions: (1) M.S., which must remain a named vector and (2) S is returned as a matrix
         if(length(pVar(sc.eSet, clusters) %>% unique()) == 1){
           
@@ -280,7 +280,7 @@ music_prop_modified = function(bulk.eset, sc.eset = NULL, markers = NULL, cluste
 #'     * gene by celltype matrix of cross-subject variation
 #'
 #' @export
-music_basis_modified = function(x, non.zero = TRUE, markers = NULL, clusters, samples, select.ct = NULL, ct.cov = FALSE, verbose = TRUE){
+music_basis_scaled = function(x, non.zero = TRUE, markers = NULL, clusters, samples, select.ct = NULL, ct.cov = FALSE, verbose = TRUE){
   
   if(!is.null(select.ct)){
     s.ct = sampleNames(x)[as.character(pVar(x, clusters)) %in% select.ct]
