@@ -91,19 +91,70 @@ music_prop_modified = function(bulk.eset, sc.eset = NULL, markers = NULL, cluste
         
       } else{
         
-        for(i in 1:length(basis_subset)){
+        # Need to add conditional statement for if only one cell type in sc.eSet, as might occur when subsetting dataset into pairs of cell types
+        # music_basis_modified will return a numeric vector, thus must convert to matrix.
+        # Two exceptions: (1) M.S., which must remain a named vector and (2) S is returned as a matrix
+        if(length(pVar(sc.eSet, clusters) %>% unique()) == 1){
           
-          if(class(basis_subset[[i]]) == "matrix"){
+          for(j in 1:length(basis_subset)){
             
-            # Reorder genes in basis_subset by order in sc.basis
-            basis_subset[[i]] <- basis_subset[[i]][match(rownames(sc.basis[[i]]), rownames(basis_subset[[i]])),] 
+            # Exception 1
+            if(names(basis_subset[j]) == "M.S"){
+              
+              sc.basis[[j]] <- c(sc.basis[[j]], basis_subset[[j]])
+              
+            } else {
+              
+              # Exception 2
+              if(class(basis_subset[[j]]) == "matrix"){
+                
+                ct_name <- pVar(sc.eSet, clusters) %>% unique() %>% as.character()
+                
+                # Reorder genes in basis_subset by order in sc.basis
+                basis_subset[[j]] <- basis_subset[[j]][match(rownames(sc.basis[[j]]), rownames(basis_subset[[j]])),] %>% 
+                  as.matrix()
+                
+                colnames(basis_subset[[j]]) <- ct_name
+                
+                sc.basis[[j]] <- sc.basis[[j]] %>%
+                  cbind(basis_subset[[j]])
+                
+              } else {
+                
+                ct_name <- pVar(sc.eSet, clusters) %>% unique() %>% as.character()
+                
+                # Reorder genes in basis_subset by order in sc.basis
+                basis_subset[[j]] <- basis_subset[[j]][match(rownames(sc.basis[[j]]), names(basis_subset[[j]]))] %>% 
+                  as.matrix()
+                
+                colnames(basis_subset[[j]]) <- ct_name
+                
+                sc.basis[[j]] <- sc.basis[[j]] %>%
+                  cbind(basis_subset[[j]])
+                
+              }
+              
+            }
             
-            sc.basis[[i]] <- sc.basis[[i]] %>%
-              cbind(basis_subset[[i]])
+          }
+          
+        } else{
+          
+          for(j in 1:length(basis_subset)){
             
-          } else {
-            
-            sc.basis[[i]] <- c(sc.basis[[i]], basis_subset[[i]])
+            if(names(basis_subset[j]) == "M.S"){
+              
+              sc.basis[[j]] <- c(sc.basis[[j]], basis_subset[[j]])
+              
+            } else {
+              
+              # Reorder genes in basis_subset by order in sc.basis
+              basis_subset[[j]] <- basis_subset[[j]][match(rownames(sc.basis[[j]]), rownames(basis_subset[[j]])),] 
+              
+              sc.basis[[j]] <- sc.basis[[j]] %>%
+                cbind(basis_subset[[j]])
+              
+            }
             
           }
           
@@ -120,7 +171,7 @@ music_prop_modified = function(bulk.eset, sc.eset = NULL, markers = NULL, cluste
   cm.gene = intersect( rownames(sc.basis$Disgn.mtx), bulk.gene )
   
   if(is.null(markers)){
-    if(length(cm.gene)< 0.2*min(length(bulk.gene), nrow(sc.eset)) )
+    if(length(cm.gene)< 0.2*min(length(bulk.gene), nrow(sc.basis$Disgn.mtx)) )
       stop("Too few common genes!")
   }else{
     if(length(cm.gene)< 0.2*length(unlist(markers)))
