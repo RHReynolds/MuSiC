@@ -1,3 +1,6 @@
+Forked version modifications:
+  - Contains modified music_prop_scaled function that permits users to perform celltype batch, wherein the dataset can be subsetted by celltype into a number of expressionSets. I.e. Each expressionSet contains all samples and all genes commonly expressed (non-zero expression) across all samples, with only a few cell types from the entire dataset. This works well for large datasets that have > 50,000 cells/nuclei in total.
+
 Multi-subject Single Cell deconvolution (MuSiC)
 =============================================
 
